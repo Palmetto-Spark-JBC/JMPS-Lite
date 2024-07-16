@@ -62,9 +62,9 @@ def get_distance(p1, p2):
     """
     if type(p1) == type(p2):
         if type(p1) == Waypoint:
-            dist_meters = round(oap.aero.distance(*p1.latlon, *p2.latlon), 4)  # in meters
+            dist_meters = oap.aero.distance(*p1.latlon, *p2.latlon)  # in meters
         elif type(p1) == tuple:
-            dist_meters = round(oap.aero.distance(*p1, *p2), 4)  # in meters
+            dist_meters = oap.aero.distance(*p1, *p2)  # in meters
         else:
             print(type(p1), type(p2))
             print(p1, p2)
@@ -74,7 +74,7 @@ def get_distance(p1, p2):
         print(p1, p2)
         raise TypeError
 
-    return dist_meters, round(dist_meters * 0.0005396118, 4)
+    return round(dist_meters, 4), round(dist_meters * 0.0005396118, 4)
 
 
 def get_true_mag_course(p1, p2):
@@ -86,13 +86,13 @@ def get_true_mag_course(p1, p2):
     """
     if type(p1) == type(p2):
         if type(p1) == Waypoint:
-            true_course = round(oap.aero.bearing(*p1.latlon, *p2.latlon), 4)  # in true course
-            mag_var_1 = round(geomag.declination(*p1.latlon), 4)
-            mag_var_2 = round(geomag.declination(*p2.latlon), 4)
+            true_course = oap.aero.bearing(*p1.latlon, *p2.latlon)  # in true course
+            mag_var_1 = geomag.declination(*p1.latlon)
+            mag_var_2 = geomag.declination(*p2.latlon)
         elif type(p1) == tuple:
-            true_course = round(oap.aero.bearing(*p1, *p2), 4)  # in true course
-            mag_var_1 = round(geomag.declination(*p1), 4)
-            mag_var_2 = round(geomag.declination(*p2), 4)
+            true_course = oap.aero.bearing(*p1, *p2)  # in true course
+            mag_var_1 = geomag.declination(*p1)
+            mag_var_2 = geomag.declination(*p2)
         else:
             print(type(p1), type(p2))
             print(p1, p2)
@@ -101,7 +101,7 @@ def get_true_mag_course(p1, p2):
         print(type(p1), type(p2))
         print(p1, p2)
         raise TypeError
-    return true_course, true_course - np.average([mag_var_1, mag_var_2])
+    return round(true_course, 4), round(true_course - np.average([mag_var_1, mag_var_2]), 4)
 
 
 def get_rectangle_points(p1, p2, corridor_size=5):
