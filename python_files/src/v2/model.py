@@ -38,7 +38,7 @@ def convert_meters_to_nm(dist_meters):
 def get_distance_nm(p1, p2):
     p1_latlong = mgrs.MGRS().toLatLon(p1)
     p2_latlong = mgrs.MGRS().toLatLon(p2)
-    dist_meters = round(oap.aero.distance(*p1_latlong, *p2_latlong), 1)  # in meters
+    dist_meters = oap.aero.distance(*p1_latlong, *p2_latlong)  # in meters
     return convert_meters_to_nm(dist_meters)
 
 
@@ -62,10 +62,10 @@ def get_true_mag_course(p1, p2):
         raise TypeError(p2)
 
     try:
-        true_course = round(oap.aero.bearing(*p1_latlong, *p2_latlong), 1)  # in true course
-        mag_var_1 = round(geomag.declination(*p1_latlong), 1)
-        mag_var_2 = round(geomag.declination(*p2_latlong), 1)
-        return true_course, true_course - np.average([mag_var_1, mag_var_2])
+        true_course = oap.aero.bearing(*p1_latlong, *p2_latlong)  # in true course
+        mag_var_1 = geomag.declination(*p1_latlong), 1
+        mag_var_2 = geomag.declination(*p2_latlong), 1
+        return round(true_course,1), round(true_course - np.average([mag_var_1, mag_var_2]),1)
     except mgrs.core.MGRSError as e:
         print(e)
         print(f"Unable to compute true/mag course for points:\np1: {p1}\np2: {p2}")

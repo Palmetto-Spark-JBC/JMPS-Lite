@@ -6,27 +6,18 @@ import numpy as np
 # import random
 # import string
 # import sys
-from tkinter import ttk
-from tkinter import *
-
-import geomag
-import pandas as pd
 import matplotlib.pyplot as plt
-import mgrs
-import openap as oap
-import descartes
+from tkinter import *
 import geopandas as gpd
-from shapely.geometry import Point, Polygon
-
-
-def nm_to_meters(nm):
-    return nm * 6076.12 / 3.28084
-
+from jmps_functions import *
 
 class JMPS_GUI(Tk):
 
     def __init__(self):
         super().__init__()
+        self.points_rows = []
+        self.point_headers = []
+        self.top_frame = Frame(self)
         self.options = {}
         self.initializeUI()
 
@@ -66,20 +57,6 @@ class JMPS_GUI(Tk):
             i.destroy()
         self.points_rows.pop()
 
-    def get_distance_nm(self, p1, p2):
-        p1_latlong = mgrs.MGRS().toLatLon(p1)
-        p2_latlong = mgrs.MGRS().toLatLon(p2)
-        dist_meters = round(oap.aero.distance(*p1_latlong, *p2_latlong), 1)  # in meters
-        return round(dist_meters * 0.0005396118, 1)
-
-    def get_true_mag_course(self, p1, p2):
-        p1_latlong = mgrs.MGRS().toLatLon(p1)
-        p2_latlong = mgrs.MGRS().toLatLon(p2)
-        true_course = round(oap.aero.bearing(*p1_latlong, *p2_latlong), 1)  # in true course
-        mag_var_1 = round(geomag.declination(*p1_latlong), 1)
-        mag_var_2 = round(geomag.declination(*p2_latlong), 1)
-        return true_course, true_course - np.average([mag_var_1, mag_var_2])
-
     def setupWindow(self):
         """ Set up the widgets."""
         title = Label(self, text="JMPS 2.0", font=('Helvetica', 20), bd=10)
@@ -111,16 +88,16 @@ class JMPS_GUI(Tk):
 
             for i in range(1, len(self.points_rows)):
                 if self.points_rows[i-1][2].get() != "" and self.points_rows[i][2].get() != "":
-                    _, mag_course = self.get_true_mag_course(self.points_rows[i - 1][2].get(), self.points_rows[i][2].get())
+                    _, mag_course = get_true_mag_course(self.points_rows[i - 1][2].get(), self.points_rows[i][2].get())
                     self.points_rows[i][3].config(state="normal")
                     self.points_rows[i][3].delete(0, END)
                     self.points_rows[i][3].insert(0, f"{mag_course:03.0f}")
                     self.points_rows[i][3].config(state="readonly")
 
-                    distance = self.get_distance_nm(self.points_rows[i-1][2].get(), self.points_rows[i][2].get())
+                    distance_meters,distance_nm = get_distance(self.points_rows[i-1][2].get(), self.points_rows[i][2].get())
                     self.points_rows[i][4].config(state="normal")
                     self.points_rows[i][4].delete(0, END)
-                    self.points_rows[i][4].insert(0, f"{distance:,.1f}")
+                    self.points_rows[i][4].insert(0, f"{distance_nm:,.1f}")
                     self.points_rows[i][4].config(state="readonly")
 
         else:
