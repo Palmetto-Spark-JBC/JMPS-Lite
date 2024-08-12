@@ -16,6 +16,7 @@ import time
 from tkinter import Label, Frame, Tk, StringVar, Entry, END, ttk
 import tkinter as tk
 import warnings
+from operator import itemgetter
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -95,8 +96,15 @@ def is_point_inside_polygon(x, y, poly):
     """
     x, y = float(x), float(y)
     n = len(poly)
-    inside = False
 
+    max_x = max(poly, key=itemgetter(0))[0]
+    min_x = min(poly, key=itemgetter(0))[0]
+    max_y = max(poly, key=itemgetter(1))[0]
+    min_y = min(poly, key=itemgetter(1))[0]
+    if x < min_x or x > max_x or y < min_y or y > max_y:
+        return False
+
+    inside = False
     p1x, p1y = poly[0]
     for i in range(n + 1):
         p2x, p2y = poly[i % n]
@@ -104,11 +112,10 @@ def is_point_inside_polygon(x, y, poly):
             if y <= max(p1y, p2y):
                 if x <= max(p1x, p2x):
                     if p1y != p2y:
-                        xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-                    if p1x == p2x or x <= xinters:
+                        x_inters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                    if p1x == p2x or x <= x_inters:
                         inside = not inside
         p1x, p1y = p2x, p2y
-
     return inside
 
 
@@ -250,7 +257,7 @@ class JMPS_GUI(Tk):
         self.plot_widget = self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=1)
         # self.plot_widget.grid(row=0, column=0, rowspan=10)
 
-        self.mainloop()
+        #self.mainloop()
 
     def initialize_tabular_window(self):
         """Create the rows/labels/inputs on right side of app."""
@@ -316,32 +323,32 @@ class JMPS_GUI(Tk):
         self.points_rows.append([point_number_label, name_input, mgrs_input, latitude_display, mag_course_display, distance_display, rad_dme_display, longitude_display, true_course_display, separator])
 
     def initialize_menu(self):
-        def donothing():
+        def do_nothing():
             print('clicked')
         menubar = tk.Menu(self.frame)
         filemenu = tk.Menu(menubar, tearoff=0)
-        filemenu.add_command(label="New", command=donothing, accelerator="Ctrl+N")
-        filemenu.add_command(label="Open", command=donothing, accelerator="Ctrl+O")
-        filemenu.add_command(label="Save", command=donothing, accelerator="Ctrl+S")
-        filemenu.add_command(label="Save as...", command=donothing, accelerator="Ctrl+Shift+S")
-        filemenu.add_command(label="Close", command=donothing, accelerator="Ctrl+W")
+        filemenu.add_command(label="New", command=do_nothing, accelerator="Ctrl+N")
+        filemenu.add_command(label="Open", command=do_nothing, accelerator="Ctrl+O")
+        filemenu.add_command(label="Save", command=do_nothing, accelerator="Ctrl+S")
+        filemenu.add_command(label="Save as...", command=do_nothing, accelerator="Ctrl+Shift+S")
+        filemenu.add_command(label="Close", command=do_nothing, accelerator="Ctrl+W")
 
         filemenu.add_separator()
         filemenu.add_command(label="Exit", command=self.quit)
         menubar.add_cascade(label="File", menu=filemenu)
         editmenu = tk.Menu(menubar, tearoff=0)
-        editmenu.add_command(label="Undo", command=donothing)
+        editmenu.add_command(label="Undo", command=do_nothing)
         editmenu.add_separator()
-        editmenu.add_command(label="Cut", command=donothing)
-        editmenu.add_command(label="Copy", command=donothing)
-        editmenu.add_command(label="Paste", command=donothing)
-        editmenu.add_command(label="Delete", command=donothing)
-        editmenu.add_command(label="Select All", command=donothing)
+        editmenu.add_command(label="Cut", command=do_nothing)
+        editmenu.add_command(label="Copy", command=do_nothing)
+        editmenu.add_command(label="Paste", command=do_nothing)
+        editmenu.add_command(label="Delete", command=do_nothing)
+        editmenu.add_command(label="Select All", command=do_nothing)
 
         menubar.add_cascade(label="Edit", menu=editmenu)
         helpmenu = tk.Menu(menubar, tearoff=0)
-        helpmenu.add_command(label="Help Index", command=donothing)
-        helpmenu.add_command(label="About...", command=donothing)
+        helpmenu.add_command(label="Help Index", command=do_nothing)
+        helpmenu.add_command(label="About...", command=do_nothing)
         menubar.add_cascade(label="Help", menu=helpmenu)
 
         self.config(menu=menubar)
@@ -442,14 +449,12 @@ class JMPS_GUI(Tk):
                             self.points_rows[i][5].delete(0, END)
                             self.points_rows[i][5].insert(0, f"{distance:,.1f}")
                             self.points_rows[i][5].config(state="readonly")
-
         else:
             # if len < 3, don't delete the last row
             if self.points_rows[-1][1].get() != "" or self.points_rows[-1][2].get() != "":
                 self.add_point_row(self.right_frame, len(self.points_rows) * 3 + 2 + self.row_start)
         self.update_plot()
         # print(self.points_rows)
-
 
     def run_vertical_profile(self):
         tfads_data = filter_tfads_data_by_country()
@@ -458,3 +463,8 @@ class JMPS_GUI(Tk):
                                                           corridor_size=5)
             # print(high_pt, high_elev)
         plt.show()
+
+
+if __name__ == "__main__":
+    app = JMPS_GUI()
+
